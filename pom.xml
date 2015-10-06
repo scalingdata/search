@@ -135,6 +135,13 @@
   </licenses>
 
   <properties>
+    <cdh.mr1.version>2.7.1.2.3.0.0-2557</cdh.mr1.version>
+    <cdh.solr.version>5.2.1</cdh.solr.version>
+    <cdh.parquet.version>1.6.0</cdh.parquet.version>
+    <cdh.flume-ng.version>1.5.2</cdh.flume-ng.version>
+    <cdh.avro.version>1.7.6</cdh.avro.version>
+    <cdh.httpcomponents.version>4.4.1</cdh.httpcomponents.version>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <solr.version>${cdh.solr.version}</solr.version>
     <solr.expected.version>4.4.0-cdh5.4.0</solr.expected.version> <!-- sanity check to verify we actually run against the expected version rather than some outdated version -->
