@@ -111,7 +111,7 @@
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-security-util</artifactId>
-      <version>${solr.version}</version>
+      <version>4.10.3-cdh5.4.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.solr</groupId>
@@ -166,23 +166,12 @@
       <artifactId>argparse4j</artifactId>
       <version>${argparse4j.version}</version>
     </dependency>
-    
-    <!-- The following libraries come with Hadoop but are missing from
-         the client POM. You need them if you want to use MR LocalJobRunner
-         from the IDE. If you don't you can safely delete them. -->
+
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.0.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

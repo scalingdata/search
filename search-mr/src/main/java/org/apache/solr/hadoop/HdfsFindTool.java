@@ -19,8 +19,6 @@
 package org.apache.solr.hadoop;
 
 import org.apache.hadoop.fs.FsShell;
-import org.apache.hadoop.fs.shell.CommandFactory;
-import org.apache.hadoop.fs.shell.Find;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
@@ -47,10 +45,5 @@ public class HdfsFindTool extends FsShell {
     System.exit(res);
   }
 
-  @Override
-  protected void registerCommands(CommandFactory factory) {
-    super.registerCommands(factory);
-    factory.registerCommands(Find.class);
-  }
 }
 

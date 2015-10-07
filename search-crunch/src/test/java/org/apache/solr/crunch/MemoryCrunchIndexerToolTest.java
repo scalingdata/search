@@ -84,7 +84,7 @@ public class MemoryCrunchIndexerToolTest extends AbstractSolrMorphlineZkTest {
     this.pipelineType = pipelineType;
     this.isDryRun = isDryRun;
     sliceCount = 1;
-    shardCount = 1;
+    fixShardCount(1);
   }
     
   @Before
@@ -92,7 +92,6 @@ public class MemoryCrunchIndexerToolTest extends AbstractSolrMorphlineZkTest {
     super.setUp();
   }
 
-  @Override
   public void doTest() throws Exception {
     waitForRecoveriesToFinish(false);
     resetTest();

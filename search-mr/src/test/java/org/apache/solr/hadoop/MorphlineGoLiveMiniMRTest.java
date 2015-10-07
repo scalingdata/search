@@ -53,6 +53,8 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -104,17 +106,17 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
   
   private static MiniDFSCluster dfsCluster = null;
   private static MiniMRCluster mrCluster = null;
-  private static String tempDir;
+  private static java.nio.file.Path tempDir;
  
   private final String inputAvroFile1;
   private final String inputAvroFile2;
   private final String inputAvroFile3;
 
-  private static File solrHomeDirectory;
+  private static java.nio.file.Path solrHomeDirectory;
 
   @Override
   public String getSolrHome() {
-    return solrHomeDirectory.getPath();
+    return solrHomeDirectory.toFile().toString();
   }
   
   public MorphlineGoLiveMiniMRTest() {
@@ -122,9 +124,8 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
     this.inputAvroFile2 = "sample-statuses-20120906-141433.avro";
     this.inputAvroFile3 = "sample-statuses-20120906-141433-medium.avro";
     
-    fixShardCount = true;
     sliceCount = TEST_NIGHTLY ? 7 : 3;
-    shardCount = TEST_NIGHTLY ? 7 : 3;
+    fixShardCount(TEST_NIGHTLY ? 7 : 3);
   }
   
   @BeforeClass
@@ -145,18 +146,18 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
     assumeFalse("FIXME: This test fails under Java 8 due to the Saxon dependency - see SOLR-1301", Constants.JRE_IS_MINIMUM_JAVA8);
     assumeFalse("FIXME: This test fails under J9 due to the Saxon dependency - see SOLR-1301", System.getProperty("java.vm.info", "<?>").contains("IBM J9"));
     
-    AbstractZkTestCase.SOLRHOME = solrHomeDirectory;
+    AbstractZkTestCase.SOLRHOME = solrHomeDirectory.toFile();
     FileUtils.copyDirectory(MINIMR_INSTANCE_DIR, AbstractZkTestCase.SOLRHOME);
-    tempDir = createTempDir().getAbsolutePath();
+    tempDir = createTempDir();
 
-    new File(tempDir).mkdirs();
+    tempDir.toFile().mkdirs();
 
     FileUtils.copyFile(new File(RESOURCES_DIR + "/custom-mimetypes.xml"), new File(tempDir + "/custom-mimetypes.xml"));
     
-    UtilsForTests.setupMorphline(tempDir, "test-morphlines/solrCellDocumentTypes", true, RESOURCES_DIR);
+    UtilsForTests.setupMorphline(tempDir.toString(), "test-morphlines/solrCellDocumentTypes", true, RESOURCES_DIR);
     
     
-    System.setProperty("hadoop.log.dir", new File(tempDir, "logs").getAbsolutePath());
+    System.setProperty("hadoop.log.dir", new File(tempDir.toFile(), "logs").getAbsolutePath());
     
     int taskTrackers = 2;
     int dataNodes = 2;
@@ -244,13 +245,7 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
   private JobConf getJobConf() {
     return mrCluster.createJobConf();
   }
-  
-  @Test
-  @Override
-  public void testDistribSearch() throws Exception {
-    super.testDistribSearch();
-  }
-  
+
   @Test
   public void testBuildShardUrls() throws Exception {
     // 2x3
@@ -353,8 +348,7 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
     };
     return concat(head, args); 
   }
-  
-  @Override
+
   public void doTest() throws Exception {
     
     waitForRecoveriesToFinish(false);
@@ -694,27 +688,27 @@ public class MorphlineGoLiveMiniMRTest extends AbstractFullDistribZkTestBase {
   }
 
   private void getShardUrlArgs(List<String> args) {
-    for (int i = 0; i < shardCount; i++) {
+    for (int i = 0; i < getShardCount(); i++) {
       args.add("--shard-url");
       args.add(cloudJettys.get(i).url);
     }
   }
   
-  private SolrDocumentList executeSolrQuery(SolrServer collection, String queryString) throws SolrServerException {
+  private SolrDocumentList executeSolrQuery(CloudSolrClient collection, String queryString) throws SolrServerException, IOException {
     SolrQuery query = new SolrQuery(queryString).setRows(2 * RECORD_COUNT).addSort("id", ORDER.asc);
     QueryResponse response = collection.query(query);
     return response.getResults();
   }
 
   private void checkConsistency(String replicatedCollection)
-      throws SolrServerException {
+      throws SolrServerException, IOException {
     Collection<Slice> slices = cloudClient.getZkStateReader().getClusterState()
         .getSlices(replicatedCollection);
     for (Slice slice : slices) {
       Collection<Replica> replicas = slice.getReplicas();
       long found = -1;
       for (Replica replica : replicas) {
-        HttpSolrServer client = new HttpSolrServer(
+        HttpSolrClient client = new HttpSolrClient(
             new ZkCoreNodeProps(replica).getCoreUrl());
         SolrQuery query = new SolrQuery("*:*");
         query.set("distrib", false);

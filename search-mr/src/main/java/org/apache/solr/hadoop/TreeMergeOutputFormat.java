@@ -96,12 +96,12 @@ public class TreeMergeOutputFormat extends FileOutputFormat<Text, NullWritable> 
       heartBeater.needHeartBeat();
       try {
         Directory mergedIndex = new HdfsDirectory(workDir, context.getConfiguration());
-        
+
         // TODO: shouldn't we pull the Version from the solrconfig.xml?
-        IndexWriterConfig writerConfig = new IndexWriterConfig(Version.LUCENE_CURRENT, null)
+        IndexWriterConfig writerConfig = new IndexWriterConfig(null)
             .setOpenMode(OpenMode.CREATE).setUseCompoundFile(false)
             //.setMergePolicy(mergePolicy) // TODO: grab tuned MergePolicy from solrconfig.xml?
-            //.setMergeScheduler(...) // TODO: grab tuned MergeScheduler from solrconfig.xml?
+            //.setMergeScheduler(...) // TODO: grab tuned MergeScheduler from solrconfig.xml?§
             ;
           
         if (LOG.isDebugEnabled()) {
